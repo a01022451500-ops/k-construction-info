@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>건설사 본사 및 주요 인사 정보 Directory</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #1e293b;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+
+        /* 컨트롤 영역 (검색 & 필터) */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-filter {
+            background: #e2e8f0;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-filter:hover, .btn-filter.active {
+            background: #3b82f6;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* 테이블 스타일 */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .badge-group {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .badge-type-hq {
+            color: #059669;
+            background-color: #ecfdf5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .badge-type-person {
+            color: #d97706;
+            background-color: #fffbeb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .no-result {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .stats-count {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏗️ 주요 건설사 본사 및 임원 주소록</h1>
+
+    <div class="controls">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="회사명, 이름, 직책, 주소, 지역 등을 검색하세요..." onkeyup="filterData()">
+        </div>
+        <div class="filter-buttons" id="filterButtons">
+            <!-- 자바스크립트로 필터 버튼이 생성됩니다 -->
+        </div>
+    </div>
+
+    <div class="stats-count" id="statsCount"></div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 60px; text-align: center;">연번</th>
+                    <th style="width: 120px;">그룹명</th>
+                    <th style="width: 130px;">구분</th>
+                    <th style="width: 120px;">이름</th>
+                    <th style="width: 140px;">직책/비고</th>
+                    <th>주소 / 위치</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- 자바스크립트로 데이터가 채워집니다 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// JSON 데이터 구조 정의
+const rawData = [
+    // SM그룹
+    { group: "SM그룹", type: "본사", name: "-", position: "본사", address: "서울특별시 서대문구 신촌역로 30, 신촌민자역사" },
+    { group: "SM그룹", type: "임원", name: "우오현", position: "그룹 회장 / 오너", address: "영등포구 여의동로 213, A동 1403호(여의도동, 여의도금호리첸시아)" },
+    { group: "SM그룹", type: "임원", name: "우기원", position: "그룹 대표", address: "영등포구 여의동로 213, A동 1403호(여의도동, 여의도금호리첸시아)" },
+    { group: "SM그룹", type: "임원", name: "이기동", position: "SM경남 대표이사", address: "마포구 양화로 45, 102동 3502호(서교동, 메세나폴리스)" },
+    { group: "SM그룹", type: "임원", name: "임복동", position: "건설부문장", address: "송파구 올림픽로 393, 123동 201호(신천동, 잠실래미안아이파크)" },
+
+    // SGC그룹
+    { group: "SGC그룹", type: "본사", name: "-", position: "본사", address: "서울시 서초구 양재대로 246 송암빌딩" },
+    { group: "SGC그룹", type: "임원", name: "이복영", position: "그룹 회장", address: "성북구 대사관로1길 77(성북동, 330-342 외 1필지)" },
+    { group: "SGC그룹", type: "임원", name: "이창모", position: "SGC이앤씨 대표이사", address: "광진구 자양로19길 80-11(자양동)" },
+    { group: "SGC그룹", type: "임원", name: "이우성", position: "SGC이앤씨 대표이사", address: "용산구 독서당로 111, 101동 티201호(한남동, 한남더힐)" },
+
+    // DL그룹
+    { group: "DL그룹", type: "본사", name: "-", position: "본사", address: "서울특별시 강서구 공항대로 165 원그로브 A동" },
+    { group: "DL그룹", type: "임원", name: "이해욱", position: "그룹 회장", address: "강남구 삼성로120길 16-49(삼성동, 강남빌라)" },
+    { group: "DL그룹", type: "임원", name: "정인", position: "대림 대표이사", address: "경기 김포시 고촌읍 수기로 67-53, 217동 701호(수기마을 힐스테이트)" },
+    { group: "DL그룹", type: "임원", name: "김종현", position: "DL㈜ 대표이사", address: "용산구 서빙고로 31, 201동 2003호(용산 시티파크)" },
+    { group: "DL그룹", type: "임원", name: "박상신", position: "DL이앤씨 대표이사", address: "양천구 목동중앙로7길 32, 103동 602호(목동, 목동이편한세상아파트)" },
+
+    // 호반
+    { group: "호반", type: "본사", name: "-", position: "본사", address: "서울 서초구 양재대로2길 18 (우면동 786) 호반파크 2관" },
+    { group: "호반", type: "임원", name: "김상열", position: "창업자 오너", address: "서초구 명달로 97-12, A동 201호(트라움하우스5차)" },
+    { group: "호반", type: "임원", name: "김선규", position: "회장", address: "강남구 압구정로33길 70, 51동 103호(현대아파트)" },
+    { group: "호반", type: "임원", name: "박철희", position: "대표", address: "수원시 영통구 광교호수공원로 277, 104동 4201호(중흥S-클래스)" },
+
+    // GS
+    { group: "GS", type: "본사", name: "-", position: "본사", address: "종로구 종로 33" },
+    { group: "GS", type: "임원", name: "허창수", position: "GS건설 회장", address: "용산구 이촌로64길 15, 110동 2402호(LG한강자이)" },
+    { group: "GS", type: "임원", name: "허윤홍", position: "GS건설 사장", address: "서초구 동광로27길 70, 1비호(어퍼하우스3차)" },
+    { group: "GS", type: "임원", name: "허태수", position: "GS그룹 회장", address: "서초구 염곡안길 57" },
+
+    // 중흥
+    { group: "중흥", type: "본사", name: "-", position: "서울본사", address: "영등포구 당산동5가 9-2 (14층·15층)" },
+    { group: "중흥", type: "본사", name: "-", position: "전남본사1", address: "광주 북구 무등로 204" },
+    { group: "중흥", type: "본사", name: "-", position: "전남본사2", address: "전남 나주시 남평읍 나주호로 442-129" },
+    { group: "중흥", type: "임원", name: "정원주", position: "회장", address: "광주 동구 의재로 225-3" },
+    { group: "중흥", type: "임원", name: "이경호", position: "대표", address: "광주 광산구 풍영로170번길 39-26, 503동 1203호(대방노블랜드)" },
+    { group: "중흥(대우건설)", type: "본사", name: "-", position: "본사", address: "중구 을지로 170" },
+    { group: "중흥(대우건설)", type: "임원", name: "정원주", position: "회장", address: "광주 동구 의재로 225-3" },
+    { group: "중흥(대우건설)", type: "임원", name: "김보현", position: "대표", address: "용산구 서빙고로 17, 104동 1001호(센트럴파크)" },
+
+    // 금호
+    { group: "금호", type: "본사", name: "-", position: "서울본사", address: "종로구 우정국로 26(센트로폴리스 A동)" },
+    { group: "금호", type: "본사", name: "-", position: "지방본사", address: "전남 나주시 시청길 4" },
+    { group: "금호", type: "임원", name: "박세창", position: "부회장", address: "용산구 독서당로 111, 108동 201호(한남더힐)" },
+    { group: "금호", type: "임원", name: "조완석", position: "대표", address: "구로구 중앙로 121, 108동 403호(고척파크푸르지오)" },
+
+    // 제일건설
+    { group: "제일건설", type: "본사", name: "-", position: "본사", address: "광주 동구 천변우로 339, 제일오피스텔 18층" },
+    { group: "제일건설", type: "지사", name: "-", position: "서울지사", address: "동작구 동작대로 59, 8~9층(현진빌딩)" },
+    { group: "제일건설", type: "기타", name: "-", position: "무등산CC", address: "전남 화순군 화순읍 서태리 산38-1" },
+    { group: "제일건설", type: "임원", name: "유재훈", position: "오너", address: "광주 남구 용대로74번길 11-1, 101동 402호(골든뜨레빌)" },
+    { group: "제일건설", type: "임원", name: "허만공", position: "대표", address: "강동구 아리수로 375, 104동 2201호(고덕풍경채어바니티)" },
+
+    // 한신공영
+    { group: "한신공영", type: "본사", name: "-", position: "본사", address: "경기 용인시 처인구 백암면 덕평로 82" },
+    { group: "한신공영", type: "지사", name: "-", position: "서울지사", address: "서초구 잠원로 94, 한신공영빌딩" },
+    { group: "한신공영", type: "임원", name: "최용선", position: "오너", address: "광진구 자양동 695외 1필지, 3동 402호 / 성남시 분당구 야탑로 125, 102동 302호(아이파크)" },
+    { group: "한신공영", type: "임원", name: "최문규", position: "대표", address: "용산구 이촌로64길 15, 107동 2202호(LG한강자이)" },
+
+    // BS한양
+    { group: "BS한양", type: "본사", name: "-", position: "본사", address: "인천 서구 청라한내로 110, 청라파이낸스센터 13층 4-비호(청라동)" },
+    { group: "BS한양", type: "지사", name: "-", position: "서울사무소", address: "송파구 법원로11길 12, BS한양타워" },
+    { group: "BS한양", type: "임원", name: "이기승", position: "오너", address: "강남구 남부순환로377길 26, 901호(도곡동, 힐데스하임빌라)" },
+    { group: "BS한양", type: "임원", name: "이화영", position: "보성그룹 부인 / 한양 이사", address: "강남구 남부순환로377길 26, 901호(힐데스하임)" },
+    { group: "BS한양", type: "임원", name: "최인호", position: "대표이사", address: "수원시 영통구 광교호수로152번길 23, 2301동 2504호(하동, 광교 레이크 파크 한양수자인)" },
+    { group: "BS한양", type: "임원", name: "박유신", position: "대표이사", address: "성남시 수정구 위례동로 61, 5615동 1104호(창곡동, 위례 래미안이편한세상)" },
+
+    // 한양
+    { group: "한양", type: "본사", name: "-", position: "본사", address: "송파구 백제고분로50길 7" },
+    { group: "한양", type: "임원", name: "이우식", position: "회장", address: "강남구 자곡동 611, 래미안강남힐즈 615동" },
+
+    // 서희건설
+    { group: "서희건설", type: "본사", name: "-", position: "본사", address: "서울특별시 서초구 남부순환로 2583 (서초동)" },
+    { group: "서희건설", type: "임원", name: "이봉관", position: "회장", address: "영등포구 국회대로 38, 101동 1308호(여의도더샵아일랜드파크)" },
+
+    // 계룡건설 / KR산업
+    { group: "계룡건설", type: "임원", name: "이승찬", position: "회장", address: "대전 유성구 대덕대로604번길 21" },
+    { group: "계룡건설", type: "임원", name: "박희성", position: "케이알산업 대표", address: "경기 하남시 위례대로6길 15, 7212동 1101호(힐스테이트 센트럴 위례)" },
+
+    // 효성
+    { group: "효성", type: "본사", name: "-", position: "본사", address: "마포구 마포대로 119" },
+    { group: "효성", type: "임원", name: "조현준", position: "회장", address: "성북구 선잠로2나길 12-8, 302호(효성성북동빌라)" },
+    { group: "효성", type: "임원", name: "우태희", position: "효성중공업 대표", address: "송파구 잠실로 62, 338동 1001호(트리지움)" },
+
+    // 현대차그룹
+    { group: "현대차그룹", type: "본사", name: "-", position: "현대건설 본사", address: "종로구 율곡로 75" },
+    { group: "현대차그룹", type: "본사", name: "-", position: "현대차 본사", address: "서초구 헌릉로 12" },
+    { group: "현대차그룹", type: "임원", name: "정의선", position: "회장", address: "용산구 유엔빌리지1길 14" },
+    { group: "현대차그룹", type: "임원", name: "송호성", position: "기아 사장", address: "서초구 서초대로64길 36, 101동 1304호(대성유니드)" },
+    { group: "현대차그룹", type: "임원", name: "이한우", position: "현대건설 대표", address: "성동구 고산자로 160, 114동 1501호(대림강변타운)" },
+
+    // HDC
+    { group: "HDC", type: "본사", name: "-", position: "본사", address: "서울특별시 종로구 경희궁1가길 9" },
+    { group: "HDC", type: "임원", name: "정몽규", position: "회장", address: "경기 양평군 서종면 당목뿌리길 98" },
+
+    // 포스코
+    { group: "포스코", type: "본사", name: "-", position: "본사", address: "서울특별시 강남구 테헤란로 440(대치동) 포스코센터" },
+    { group: "포스코", type: "본사", name: "-", position: "건설본사", address: "인천광역시 연수구 컨벤시아대로 165 포스코타워" },
+    { group: "포스코", type: "임원", name: "장인화", position: "회장", address: "서초구 사임당로1길 32, 1동 103호(해정빌라)" },
+
+    // 롯데
+    { group: "롯데", type: "본사", name: "-", position: "본사", address: "서울특별시 송파구 올림픽로 300(신천동 29) 롯데월드타워" },
+    { group: "롯데", type: "임원", name: "신동빈", position: "그룹 회장", address: "송파구 올림픽로 300, 7001호(롯데월드타워동)" },
+    { group: "롯데", type: "임원", name: "오일근", position: "롯데건설 대표", address: "서초구 신반포로 251, 114동 401호(메이플자이1단지)" }
+];
+
+let selectedGroup = "전체";
+
+// 초기화
+function init() {
+    renderFilterButtons();
+    renderTable(rawData);
+}
+
+// 필터 버튼 생성
+function renderFilterButtons() {
+    const groups = ["전체", ...new Set(rawData.map(item => item.group))];
+    const container = document.getElementById("filterButtons");
+    
+    container.innerHTML = groups.map(g => 
+        `<button class="btn-filter ${g === '전체' ? 'active' : ''}" onclick="selectFilter('${g}', this)">${g}</button>`
+    ).join('');
+}
+
+// 필터 버튼 클릭 시
+function selectFilter(group, btn) {
+    selectedGroup = group;
+    
+    document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    filterData();
+}
+
+// 검색 및 필터링 적용 함수
+function filterData() {
+    const query = document.getElementById("searchInput").value.toLowerCase();
+    
+    const filtered = rawData.filter(item => {
+        // 그룹 필터 체크
+        const matchGroup = (selectedGroup === "전체") || (item.group === selectedGroup);
+        
+        // 검색어 필터 체크
+        const matchQuery = 
+            item.group.toLowerCase().includes(query) ||
+            item.type.toLowerCase().includes(query) ||
+            item.name.toLowerCase().includes(query) ||
+            item.position.toLowerCase().includes(query) ||
+            item.address.toLowerCase().includes(query);
+            
+        return matchGroup && matchQuery;
+    });
+
+    renderTable(filtered);
+}
+
+// 테이블 출력 함수
+function renderTable(data) {
+    const tbody = document.getElementById("tableBody");
+    const stats = document.getElementById("statsCount");
+
+    stats.innerText = `총 ${data.length}개의 항목이 검색되었습니다.`;
+
+    if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="no-result">검색 조건에 해당되는 정보가 없습니다.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = data.map((item, index) => {
+        const typeBadge = item.type === "임원" 
+            ? `<span class="badge-type-person">임원</span>`
+            : `<span class="badge-type-hq">${item.type}</span>`;
+
+        return `
+            <tr>
+                <td style="text-align: center; color: #64748b;">${index + 1}</td>
+                <td><span class="badge-group">${item.group}</span></td>
+                <td>${typeBadge}</td>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.position}</td>
+                <td>${item.address}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// 페이지 로드 시 시작
+window.onload = init;
+</script>
+
+</body>
+</html>
