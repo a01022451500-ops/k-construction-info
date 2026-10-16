@@ -143,6 +143,14 @@
             font-size: 12px;
         }
 
+        .badge-type-branch {
+            color: #2563eb;
+            background-color: #eff6ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
         .no-result {
             text-align: center;
             padding: 40px;
@@ -299,7 +307,12 @@ const rawData = [
     // 롯데
     { group: "롯데", type: "본사", name: "-", position: "본사", address: "서울특별시 송파구 올림픽로 300(신천동 29) 롯데월드타워" },
     { group: "롯데", type: "임원", name: "신동빈", position: "그룹 회장", address: "송파구 올림픽로 300, 7001호(롯데월드타워동)" },
-    { group: "롯데", type: "임원", name: "오일근", position: "롯데건설 대표", address: "서초구 신반포로 251, 114동 401호(메이플자이1단지)" }
+    { group: "롯데", type: "임원", name: "오일근", position: "롯데건설 대표", address: "서초구 신반포로 251, 114동 401호(메이플자이1단지)" },
+
+    // 동일토건
+    { group: "동일토건", type: "본사", name: "-", position: "본사", address: "충남 천안시 서북구 두정로 106 ㈜동일토건 본사" },
+    { group: "동일토건", type: "지사", name: "-", position: "서울사무소", address: "서울특별시 강남구 영동대로 731 신영빌딩" },
+    { group: "동일토건", type: "임원", name: "고동현", position: "대표이사", address: "서울특별시 강남구 청담동 69-18" }
 ];
 
 let selectedGroup = "전체";
@@ -365,9 +378,14 @@ function renderTable(data) {
     }
 
     tbody.innerHTML = data.map((item, index) => {
-        const typeBadge = item.type === "임원" 
-            ? `<span class="badge-type-person">임원</span>`
-            : `<span class="badge-type-hq">${item.type}</span>`;
+        let typeBadge;
+        if (item.type === "임원") {
+            typeBadge = `<span class="badge-type-person">임원</span>`;
+        } else if (item.type === "지사") {
+            typeBadge = `<span class="badge-type-branch">지사</span>`;
+        } else {
+            typeBadge = `<span class="badge-type-hq">${item.type}</span>`;
+        }
 
         return `
             <tr>
